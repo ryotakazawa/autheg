@@ -1,0 +1,31 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    ports:
+        - "5432"
+    environment:
+        POSTGRES_HOST_AUTH_METHOD: 'trust'
+  backend:
+    build:
+      context: autheg-backend
+      args:
+        UID: ${UID:-1001}
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 8080 -b '0.0.0.0'"
+    volumes:
+      - ./autheg-backend:/usr/src/app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    user: rails
+  frontend:
+    build:
+      context: autheg-frontend
+      args:
+        UID: ${UID:-1001}
+    volumes:
+      - ./autheg-frontend:/usr/src/app
+    ports:
+      - "3000:3000"
+    user: frontend
